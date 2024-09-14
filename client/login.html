@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Home und Login</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <style>
+    .metadata-container {
+      display: none;
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 80%;
+      max-width: 800px;
+      background-color: #fff;
+      border: 1px solid #ccc;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+      padding: 20px;
+      z-index: 1000;
+    }
+    .metadata-container h3 {
+      margin-top: 0;
+    }
+    .metadata-container button {
+      display: block;
+      margin: 10px auto 0;
+      padding: 10px 20px;
+      border: none;
+      background-color: #007bff;
+      color: #fff;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .metadata-container button:hover {
+      background-color: #0056b3;
+    }
+    .overlay {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.5);
+      z-index: 999;
+    }
+
+    /* Mobile-optimierte Stile */
+    @media (max-width: 600px) {
+      .metadata-container {
+        width: 90%;
+        top: 10%;
+        left: 5%;
+        transform: none;
+      }
+      .metadata-container h3 {
+        font-size: 20px;
+      }
+      .metadata-container button {
+        font-size: 16px;
+        width: 100%;
+      }
+
+      .login-container {
+        width: 90%;
+        max-width: none;
+        margin: 20px auto;
+        padding: 15px;
+      }
+      .login-container h2 {
+        font-size: 24px;
+      }
+      .login-container form {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+      }
+      .login-container input[type="text"],
+      .login-container input[type="password"] {
+        width: 100%;
+        font-size: 16px;
+        margin-bottom: 15px;
+        padding: 10px;
+      }
+      .login-container button {
+        width: 100%;
+        padding: 10px;
+        font-size: 18px;
+      }
+      .error {
+        font-size: 14px;
+      }
+
+      #home-container {
+        flex-direction: column;
+        padding: 10px;
+      }
+      .project h3 {
+        font-size: 20px;
+        text-align: center;
+      }
+      .project img {
+        width: 80%;
+        height: auto;
+        margin: 0 auto;
+        display: block;
+      }
+      .project button {
+        width: 100%;
+        padding: 10px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Login Bereich -->
+  <div id="login-container" class="login-container">
+    <h2>Login</h2>
+    <form id="loginForm">
+      <label for="username">Username:</label>
+      <input type="text" id="username" name="username" required>
+      <br>
+      <label for="password">Password:</label>
+      <input type="password" id="password" name="password" required>
+      <br>
+      <button type="submit">Login</button>
+    </form>
+    <p id="error-message" class="error"></p>
+  </div>
+
+  <!-- Home Bereich (wird nach dem Login angezeigt) -->
+  <div id="home-container" class="container" style="display:none;">
+    <div class="project">
+      <h3>Recycling-Analyse in Hamburg: Ein interaktives WebGIS</h3>
+      <img src="assets/HH.png" alt="Hamburg Recycling Project" width="300"> <!-- Überprüfe, ob der Pfad zu diesem Bild korrekt ist -->
+      <br>
+      <button onclick="loadMap()">Karte laden</button>
+      <button onclick="showMetadata()">Metadaten</button>
+    </div>
+  </div>
+
+  <!-- Metadaten Container -->
+  <div id="metadata-overlay" class="overlay"></div>
+  <div id="metadata-container" class="metadata-container">
+    <h3>Hamburg Recycling WebGIS</h3>
+    <p><strong>Beschreibung:</strong> Interaktive Plattform zur Analyse und Visualisierung von Recyclingstationen in Hamburg mit demografischen und sozioökonomischen Daten.</p>
+    <p><strong>Zweck:</strong> Verbesserung der Recyclingstationen-Verteilung basierend auf Bevölkerungseigenschaften.</p>
+    <p><strong>Technische Details:</strong></p>
+    <ul>
+      <li><strong>Projektion:</strong> EPSG:25832 (UTM Zone 32N)</li>
+      <li><strong>Koordinatenzentrum:</strong> Hamburg [9.997789, 53.551086] (EPSG:4326)</li>
+    </ul>
+    <p><strong>Datenquellen:</strong></p>
+    <ul>
+      <li><strong>Basiskarte:</strong> OpenStreetMap</li>
+      <li><strong>GeoServer WMS-Layer:</strong> Verschiedene Recycling- und Demografiedaten</li>
+    </ul>
+    <p><strong>Funktionen:</strong></p>
+    <ul>
+      <li>CRUD für Geometrien</li>
+      <li>Textboxen für Notizen</li>
+      <li>Layer-Management und Messwerkzeuge</li>
+      <li>Kartenexport und Druck</li>
+      <li>Standortbestimmung und Feedback</li>
+    </ul>
+    <p><strong>Technologien:</strong> OpenLayers, GeoServer, Flask, JavaScript, HTML5, CSS</p>
+    <p><strong>Version:</strong> 1.0</p>
+    <p><strong>Autor:</strong> Sara Rahi</p>
+    <p><strong>Lizenz:</strong> MIT License</p>
+    <p><strong>Erstellungsdatum:</strong> 11. September 2024</p>
+    <button onclick="hideMetadata()">Schließen</button>
+  </div>
+
+  <script>
+    // Login-Logik
+    document.getElementById('loginForm').addEventListener('submit', function(event) {
+      event.preventDefault();
+      
+      const username = document.getElementById('username').value;
+      const password = document.getElementById('password').value;
+      
+      if (username === 'admin' && password === 'admin') {
+        // Verstecken des Login-Bereichs und Anzeigen des Home-Bereichs
+
+        document.getElementById('login-container').style.display = 'none';
+        document.getElementById('home-container').style.display = 'flex';
+      } else {
+        document.getElementById('error-message').textContent = 'Falscher Benutzername oder Passwort';
+      }
+    });
+
+    // Funktionen für Buttons
+    function loadMap() {
+      window.location.href = 'index.html';
+    }
+
+    function showMetadata() {
+      document.getElementById('metadata-overlay').style.display = 'block';
+      document.getElementById('metadata-container').style.display = 'block';
+    }
+
+    function hideMetadata() {
+      document.getElementById('metadata-overlay').style.display = 'none';
+      document.getElementById('metadata-container').style.display = 'none';
+    }
+  </script>
+
+</body>
+</html>

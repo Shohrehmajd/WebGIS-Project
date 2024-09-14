@@ -1,0 +1,109 @@
+[
+    {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                9.993682,
+                53.551086
+            ]
+        },
+        "properties": {
+            "name": "Feature 2"
+        },
+        "id": 2
+    },
+    {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                5.102048499719,
+                46.98654217951409
+            ]
+        },
+        "properties": {
+            "name": "Neues Feature"
+        },
+        "id": 3
+    },
+    {
+        "type": "Point",
+        "coordinates": [
+            9.993682,
+            53.551086
+        ],
+        "id": 4
+    },
+    {
+        "type": "Feature",
+        "geometry": {
+            "type": "Polygon",
+            "coordinates": [
+                null,
+                null
+            ]
+        },
+        "properties": {
+            "name": "Neues Feature"
+        },
+        "id": 4
+    },
+    {
+        "type": "Feature",
+        "geometry": {
+            "type": "LineString",
+            "coordinates": [
+                null,
+                null,
+                [
+                    587444.727893918,
+                    5925404.104599009
+                ]
+            ]
+        },
+        "properties": {
+            "name": "Neues Feature"
+        },
+        "id": 5
+    },
+    {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                5.392340152688811,
+                46.91474773462281
+            ]
+        },
+        "properties": {
+            "name": "Neues Feature"
+        },
+        "id": 6
+    },
+    {
+        "type": "Feature",
+        "geometry": {
+            "type": "Point",
+            "coordinates": [
+                5.31231777397383,
+                46.929979377458466
+            ]
+        },
+        "properties": {
+            "name": "Neues Feature"
+        },
+        "id": 7
+    }
+]
+                    5923090.063318093
+                ],
+                [
+                    602473.6470945892,
+                    5926374.716514495
+                ]
+            ]
+        },
+        "id": 7
+    }
+]{"type":"Point","coordinates":[10,53]}

@@ -1,0 +1,16 @@
+{
+  "name": "my-webgis-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start": "live-server --port=3001"
+  },
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "ol": "^10.1.0",
+    "ol-layerswitcher": "^4.1.2",
+    "proj4": "^2.12.0"
+  }
+}

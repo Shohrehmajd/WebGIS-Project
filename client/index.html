@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="de">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Recycling-Analyse in Hamburg: Ein interaktives WebGIS</title>
+    
+        <!-- OpenLayers CSS von CDN -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol@latest/ol.css">
+    
+        <!-- LayerSwitcher CSS von CDN -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/ol-layerswitcher@latest/dist/ol-layerswitcher.css">
+    
+        <!-- FontAwesome CSS für Symbole -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    
+        <!-- Custom CSS -->
+        <link rel="stylesheet" href="css/styles.css">
+    
+        <!-- OpenLayers JavaScript von CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/ol@latest/dist/ol.js"></script>
+    
+        <!-- LayerSwitcher JavaScript von CDN -->
+        <script src="https://cdn.jsdelivr.net/npm/ol-layerswitcher@latest/dist/ol-layerswitcher.js"></script>
+
+        <style>
+            /* Mobile-optimierte Einstellungen */
+            @media (max-width: 600px) {
+                .title-bar {
+                    text-align: center;
+                    padding: 10px 0;
+                    width: 100%;
+                }
+
+                .title-bar h1 {
+                    font-size: 18px;
+                    margin: 0;
+                    padding: 0 10px;
+                }
+
+                #top-right-image {
+                    width: 50px;
+                    height: auto;
+                    top: 10px;
+                    left: 10px;
+                }
+
+                #map {
+                    width: 100vw;
+                    height: calc(100vh - 50px);
+                }
+
+                /* Toolbar fixiert am unteren Bildschirmrand */
+                .toolbar {
+                    position: fixed;
+                    bottom: 0;
+                    left: 0;
+                    right: 0;
+                    display: flex;
+                    justify-content: space-around;
+                    background-color: white;
+                    padding: 10px;
+                    box-shadow: 0 -4px 8px rgba(0, 0, 0, 0.1);
+                }
+
+                .toolbar button {
+                    width: 40px;
+                    height: 40px;
+                    font-size: 18px;
+                }
+
+                /* Popup und Formulare für kleinere Bildschirme */
+                #feedback-form-container, #contact-popup, #info-container {
+                    width: 90%;
+                    max-width: none;
+                    top: 10%;
+                    left: 5%;
+                    transform: none;
+                }
+
+                #feedback-form-container h3, #contact-popup span, #info-container h2 {
+                    font-size: 20px;
+                }
+
+                /* Anpassungen für Buttons und Input-Felder */
+                button, input, textarea {
+                    font-size: 16px;
+                }
+
+                .measure-container {
+                    bottom: 70px;
+                    right: 10px;
+                }
+
+                .search-container {
+                    top: 20px;
+                    right: 10px;
+                    width: 90%;
+                    max-width: none;
+                }
+
+                .search-container input {
+                    width: 100%;
+                }
+
+                .tree-menu {
+                    flex-direction: row;
+                    gap: 10px;
+                    width: 100%;
+                    justify-content: space-around;
+                }
+
+                .crud-buttons {
+                    flex-direction: row;
+                    justify-content: space-around;
+                    gap: 5px;
+                }
+
+                /* Layer-Container anpassen */
+                #legend-container {
+                    width: 90%;
+                    height: auto;
+                    left: 5%;
+                    top: 15%;
+                }
+
+                #popup {
+                    width: 90%;
+                    left: 5%;
+                }
+
+                .location-icon {
+                    bottom: 100px;
+                    right: 10px;
+                }
+
+                /* Koordinatenanzeige kleiner */
+                #mouse-coordinates {
+                    font-size: 12px;
+                    bottom: 70px;
+                }
+            }
+        </style>
+    </head>
+<body>
+
+  <!-- Titel vor dem Logo -->
+<div class="title-bar">
+    <h1>Erfüllt Hamburgs Recycling die sozialen und demografischen Ansprüche?</h1>
+</div>
+
+<!-- Logo -->
+<img id="top-right-image" src="assets/HCU.jpg" alt="Logo">
+
+<!-- Layer-Icon für das Öffnen/Schließen der Legende -->
+<button id="layer-toggle-button" class="layer-icon-button">🗺️</button>
+
+<!-- Legend-Container für die Layer -->
+<div id="legend-container" style="display: none;">
+    <h3>Layer Legenden</h3>
+    <ul id="legend-list">
+        <!-- Die Legendenbilder und Checkboxen werden hier dynamisch hinzugefügt -->
+    </ul>
+</div>
+
+<!-- Map Container -->
+    <div id="map" class="map" style="width: 100vw; height: 100vh;"></div>
+    
+<!-- Measure-Button mit verstecktem Label an der rechten Seite -->
+<div class="measure-container">
+    <button class="tool-btn measure-button" id="measure-button">
+        &#128207;
+    </button>
+    <div class="measure-label">Measure</div>
+</div>
+
+<!-- Menüleiste für den Geometrie-Modus -->
+    <div class="menu-bar">
+        <button id="geometryTree"><i class="fas fa-project-diagram"></i></button>
+
+        <!-- Dropdown-Menü für den Geometrie-Modus -->
+        <div id="geometryTreeMenu" class="tree-menu hidden">
+            <button class="tree-btn" data-mode="point" title="Punkt zeichnen"><i class="fas fa-map-marker-alt"></i></button>
+            <button class="tree-btn" data-mode="line" title="Linie zeichnen"><i class="fas fa-draw-polygon"></i></button>
+            <button class="tree-btn" data-mode="polygon" title="Polygon zeichnen"><i class="fas fa-vector-square"></i></button>
+            <button class="tree-btn" data-mode="circle" title="Kreis zeichnen"><i class="fas fa-circle"></i></button>
+            <button class="tree-btn" data-mode="edit" title="Bearbeiten"><i class="fas fa-edit"></i></button>
+            <button class="tree-btn" data-mode="delete" title="Geometrie löschen"><i class="fas fa-trash-alt"></i></button>
+            <button class="tree-btn" data-mode="save" title="Geometrie speichern"><i class="fas fa-save"></i></button>
+        </div>
+    </div>
+
+<!-- Suchfeld -->
+<div class="search-container">
+    <input type="text" id="addressInput" placeholder="Adresse eingeben">
+    <button id="searchButton" class="search-button">🔍</button>
+</div>
+
+<!-- CRUD-Buttons -->
+<div id="crudOptionsMenu" class="crud-buttons hidden">
+    <button id="saveButton">Geometrie speichern</button>
+    <button id="deleteButton">Geometrie löschen</button>
+    <button id="fetchButton">Geometrien abrufen</button>
+</div>
+
+<!-- Koordinatenanzeige -->
+<div id="mouse-coordinates" class="mouse-coordinates"></div>
+
+<!-- Popup für Informationen -->
+<div id="popup" class="ol-popup">
+    <a href="#" id="popup-closer" class="ol-popup-closer"></a>
+    <div id="popup-content"></div>
+</div>
+
+<!-- Standort-Icon -->
+<div id="findLocationButton" class="location-icon">
+    <i class="fas fa-crosshairs"></i>
+</div>
+
+<!-- Toolbar -->
+<div class="toolbar">
+    <button class="tool-btn" data-mode="pan" title="Pan"><i class="fas fa-hand-paper"></i></button>
+    <button class="tool-btn info-button" id="info-button" title="Info">i</button>
+    <button class="zoom-button" id="zoom-in" title="Zoom In">+</button>
+    <button class="zoom-button" id="zoom-out" title="Zoom Out">-</button>
+    <button class="tool-btn" id="draw-text-button" title="Text hinzufügen">🖉</button>
+    <button class="icon-button" id="exportButton" title="Export"><i class="fas fa-share-square"></i></button>
+    <button class="icon-button" id="printButton" title="Print"><i class="fas fa-print"></i></button>
+    <button class="icon-button" id="feedbackButton" title="Feedback" onclick="openFeedbackForm()"><i class="fas fa-comment-dots"></i></button>
+    <button class="icon-button" id="contactButton" title="Kontakt" onclick="openContact()"><i class="fas fa-phone"></i></button>
+</div>
+
+<!-- Feedback-Popup -->
+<div id="feedback-form-container" style="display: none;">
+    <h3>Geben Sie uns Feedback</h3>
+    <form id="feedbackForm" onsubmit="submitFeedback(event)">
+        <div class="form-group">
+            <label for="name">Name (optional):</label>
+            <input type="text" id="name" name="name" placeholder="Max Mustermann">
+        </div>
+        <div class="form-group">
+            <label for="email">E-Mail (optional):</label>
+            <input type="email" id="email" name="email" placeholder="max@beispiel.de">
+        </div>
+        <div class="form-group">
+            <label for="feedback">Feedback:</label>
+            <textarea id="feedback" name="feedback" placeholder="Ihr Feedback hier eingeben" required></textarea>
+        </div>
+        <div class="form-buttons">
+            <button type="submit" class="submit-button">Absenden</button>
+            <button type="button" class="cancel-button" onclick="closeFeedbackForm()">Schließen</button>
+        </div>
+    </form>
+</div>
+
+<!-- Kontakt-Popup -->
+<div id="contact-popup" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); background-color: white; padding: 20px; border-radius: 10px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); z-index: 2000; width: auto; max-width: 90%;">
+    <span style="font-size: 18px; font-weight: bold;">Kontaktinformationen</span>
+    <p><strong>Name:</strong> Shohreh Delfanimajd</p>
+    <p><strong>Telefon:</strong> +49 17684949897</p>
+    <p><strong>E-Mail:</strong> <a href="mailto:max@gmail.com">shohreh.delfanimajd@hcu-hamburg.de</a></p>
+    <button onclick="closeContact()" style="margin-top: 10px; padding: 5px 10px; background-color: #007bff; color: white; border: none; border-radius: 5px; cursor: pointer;">Schließen</button>
+</div>
+
+
+<!-- Info-Container (kleinere Box) -->
+<div class="info-container" id="info-container" 
+     style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); 
+            background-color: white; padding: 15px; border-radius: 8px; 
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); z-index: 2000; width: 300px; max-width: 90%;">
+
+    <!-- Schließen-Icon für den Info-Container -->
+    <span class="close-info" id="close-info" 
+          style="position: absolute; top: 5px; right: 10px; font-size: 20px; cursor: pointer;">&times;
+    </span>
+
+    <!-- Überschrift für den Info-Container -->
+    <h2 style="font-size: 18px; margin-bottom: 10px;">Willkommen zu meinem Web-GIS!</h2>
+
+    <!-- Beschreibungstext -->
+    <p style="font-size: 14px; line-height: 1.5;">
+        Dieses Tool bietet eine umfassende Analyse der Verteilung und Effizienz von Recyclingstationen 
+        in Hamburg mit besonderem Fokus auf die demografischen und sozioökonomischen Merkmale der 
+        verschiedenen Stadtteile.
+    </p>
+
+    <p style="font-size: 14px; line-height: 1.5;">
+        Nutzen Sie die interaktive Karte, um Daten einzusehen, Feedback zu geben und zu einer 
+        nachhaltigeren Stadt beizutragen.
+    </p>
+</div>
+
+
+<!-- OpenLayers JS und andere JS-Bibliotheken -->
+<script src="node_modules/ol/dist/ol.js"></script>
+<script src="node_modules/ol-layerswitcher/dist/ol-layerswitcher.js"></script>
+<script src="node_modules/proj4/dist/proj4.js"></script>
+<script src="js/map.js"></script>
+<script src="js/CRUD.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+<script>
+    // Funktion zum Umschalten der Layer-Sichtbarkeit
+    function toggleLayerVisibility(layerId, visible) {
+        var layer = layers[layerId];
+        if (layer) {
+            layer.setVisible(visible);
+        } else {
+            console.warn('Layer "' + layerId + '" nicht gefunden.');
+        }
+    }
+
+    // Maßstabsleiste hinzufügen
+    var scaleLineControl = new ol.control.ScaleLine({
+        units: 'metric',
+        bar: true,
+        steps: 4,
+        text: true,
+        minWidth: 100
+    });
+
+    // Maßstabsleiste zur Karte hinzufügen
+    map.addControl(scaleLineControl);
+</script>
+
+</body>
+</html>

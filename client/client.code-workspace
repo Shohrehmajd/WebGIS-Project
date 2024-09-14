@@ -1,0 +1,22 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../data"
+		},
+		{
+			"path": "../geoserver"
+		},
+		{
+			"path": "../node_modules"
+		},
+		{
+			"path": "../server"
+		},
+		{
+			"path": "../venv"
+		}
+	]
+}
